@@ -1,528 +1,106 @@
-# Winnex Proof-of-Audit
+# Winnex Proof-of-Audit (Experimental)
 
-> **Supplementary audit layer for extreme-compliance scenarios.**
-> Layer 3 of the Winnex Enterprise Stack. Not for general use.
+> **Experimental exploration of blockchain-anchored audit trails.**
+> ⚠️ **Most likely unnecessary for your use case. Read below first.**
 
 [![License: BSL 1.1](https://img.shields.io/badge/License-BSL%201.1-yellow)](LICENSE)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21107317.svg)](https://doi.org/10.5281/zenodo.21107317)
 [![Contact](https://img.shields.io/badge/Contact-pay@winnex.ai-blue)](mailto:pay@winnex.ai)
 
 ---
 
-## ⚠️ Important: When to Use This Layer
+## ⚠️ Honest Assessment: This Repository Is Experimental
 
-**Winnex Proof-of-Audit is NOT for every client.** It is a supplementary, high-cost audit layer designed exclusively for scenarios where:
+**We do not recommend deploying this in production.** We maintain this repository as a research experiment.
 
-| Scenario | Example | Why Proof-of-Audit |
-|----------|---------|-------------------|
-| **Regulator demands per-query blockchain proof** | Central bank audit, SEC investigation | Immutable on-chain verification |
-| **Court-ordered e-discovery with zero-tolerance** | Class action litigation | Mathematical proof per excluded document |
-| **Cross-jurisdictional compliance with conflicting laws** | International bank, multi-government contracts | Multi-chain verification |
-| **Internal policy requires cryptographic audit trail** | Tier-1 bank with zero-trust architecture | SHA-3-256 hashed proofs, Merkle tree |
+### The Core Problem (Why Blockchain Probably Doesn't Make Sense)
 
-### When Proof-of-Audit is Overkill
+The Winnex Proof-of-Audit concept -- using a blockchain to store proof hashes -- sounds impressive but has **limited practical value**:
 
-| Scenario | Recommended Layer | Why |
-|----------|-----------------|-----|
-| Standard regulatory compliance (EU AI Act, LGPD, GDPR) | **Layer 1 + Layer 2** only | Mathematical proof without blockchain cost/complexity |
-| Internal audit for non-critical systems | **Layer 1 only** | Cauchy-Schwarz bound proof sufficient |
-| Startups and mid-market | **Layer 1 + Layer 2** | Compliance dashboard without blockchain overhead |
+| Audit Method | Cost | Legal Weight | Complexity |
+|-------------|------|-------------|------------|
+| **Signed PDF from Winnex** | ~$0 | Admissible as business record | None |
+| **PGP/GPG digital signature** | ~$0 | Strong legal precedent | Low |
+| **RFC 3161 timestamp authority** | ~$0.10/timestamp | Widely accepted in e-discovery | Low |
+| **Blockchain (Polygon/Hedera)** | $0.01-$0.50/tx + infrastructure | **No additional legal weight** | High |
 
-### Costs & Complexity
+A cryptographic signature from a trusted authority (PGP, timestamp service) **already provides the same legal admissibility** as a blockchain transaction, without the complexity, gas fees, latency, or key management overhead.
 
-| Factor | Layer 1 + Layer 2 | Adding Layer 3 (Proof-of-Audit) |
-|--------|------------------|--------------------------------|
-| **Annual license** | R$ 500K-1M | R$ 2M-5M |
-| **Infrastructure** | CPU-only, standard | Blockchain node/gateway + gas fees |
-| **Latency overhead** | None (1-2ms) | +50-500ms for on-chain registration |
-| **Operational complexity** | Low | High (key management, gas optimization) |
-| **When to use** | Default for all clients | Only when explicitly required by regulation or contract |
+### What This Repository Actually Contains
+
+This is a **reference study** exploring how blockchain could theoretically be layered on top of the Madhava audit engine. It demonstrates:
+
+| Component | Description | Production Readiness |
+|-----------|-------------|---------------------|
+| `WinnexAudit.sol` | Minimal Solidity contract storing Merkle roots | ❌ No access control, no spam protection |
+| `src/chain.py` | Web3.py integration scaffolding | ❌ Requires Web3 setup, no error handling |
+| `api/server.py` | FastAPI verification service | ❌ Blueprint only, no auth, no rate limiting |
+
+### What You Should Actually Use
+
+### The Winnex Stack — Without Blockchain
+
+```
+Layer 1: Madhava Audit Engine (C++/Python)
+         Per-document Cauchy-Schwarz bound proof
+         --> This IS the product. Proven, validated, zero violations.
+
+Layer 2: Compliance Dashboard (planned)
+         Bound monitoring, regulatory reports, JSON audit logs
+
+Layer 3: This repository (experimental)
+         --> Unnecessary for 99% of clients. Skip it.
+```
+
+**For regulatory compliance, the mathematical proof produced by the Madhava engine (Layer 1) is sufficient.** The per-document audit trail -- a JSON record showing the Cauchy-Schwarz bound calculation for each excluded document -- can be:
+1. Logged to a standard database
+2. Signed with your own GPG key
+3. Timestamped by a trusted authority (RFC 3161)
+4. Submitted to regulators as a standard business record
+
+**All of these options are cheaper, simpler, and carry the same legal weight as blockchain.**
 
 ---
 
-## What This Layer Does
+## If You Still Want to Explore Blockchain...
 
-Proof-of-Audit adds **blockchain-anchored cryptographic verification** on top of the existing Madhava mathematical proof. It does NOT replace the lower layers -- it supplements them for the minority of clients who need immutable on-chain records.
+### When It Might (Theoretically) Add Value
 
-The standard Winnex flow (Layer 1 + Layer 2):
-```
-Search query -> Cauchy-Schwarz bound proof -> Compliance dashboard JSON -> Done. (~1ms)
-```
+| Scenario | Why Blockchain | Realistic? |
+|----------|---------------|------------|
+| Publicly verifiable audit trail | Anyone can verify without trusting Winnex | ✅ Valid, but niche |
+| Decentralized multi-stakeholder audit | Multiple regulators need independent verification | ✅ Possibly useful |
+| Permanent immutable record | No possibility of backdating or alteration | ⚠️ Same as timestamp service |
+| Compliance theater | "We use blockchain for audit" sounds good | ❌ Not a real requirement |
 
-With Proof-of-Audit (Layer 3):
-```
-Search query -> Cauchy-Schwarz bound proof -> SHA-3-256 hashing -> 
-Smart contract submission -> Merkle tree verification -> On-chain record. (~500ms)
-```
-
-**For most clients, the standard flow is sufficient.** The blockchain step adds cost, latency, and complexity that only makes sense for extreme audit scenarios.
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                    PROOF-OF-AUDIT CERTIFICATE                       │
-├─────────────────────────────────────────────────────────────────────┤
-│  Certificate ID: 0x7f3a9b2c... (SHA-256 hash)                      │
-│  Blockchain:    Ethereum/Polygon/Hedera                             │
-│  Block Number:  18,493,721                                          │
-│  Timestamp:     2026-07-01T14:23:45Z                                │
-│  Signer:        Winnex Smart Contract (0x9e2f...a4b1)               │
-│                                                                     │
-│  Audit Scope:                                                       │
-│  - Queries audited:      1,247,893                                  │
-│  - Documents excluded:   62,394,650                                 │
-│  - Bound violations:      0                                         │
-│  - NDCG@10:               1.000                                     │
-│                                                                     │
-│  Mathematical Proof:                                                │
-│  - Algorithm:  MadhavaCore [64,128]                                 │
-│  - Method:     Cauchy-Schwarz upper bound                           │
-│  - Verification: Per-document exclusion proof                       │
-│                                                                     │
-│  Verification URL:                                                  │
-│  https://proof.winnex.ai/verify/0x7f3a9b2c...                       │
-│                                                                     │
-│  Regulatory Mapping:                                                │
-│  [YES] EU AI Act Art. 13-15 (Transparency)                         │
-│  [YES] LGPD Art. 20 (Right to Review)                              │
-│  [YES] GDPR Art. 22 (Explainability)                               │
-│  [YES] HIPAA sec.164.524 (Completeness)                            │
-└─────────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## How It Works
-
-```
-                    ┌─────────────────────────┐
-                    │    SEARCH QUERY          │
-                    └────────────┬────────────┘
-                                 │
-                    ┌────────────▼────────────┐
-                    │  Madhava Audit Engine    │
-                    │  Cauchy-Schwarz bound    │
-                    │  Per-document proof      │
-                    └────────────┬────────────┘
-                                 │
-                    ┌────────────▼────────────┐
-                    │  Proof Hash (SHA-256)    │
-                    │  proof_hash = SHA256(    │
-                    │    query_hash +          │
-                    │    exclusion_proofs +    │
-                    │    threshold +           │
-                    │    timestamp             │
-                    │  )                       │
-                    └────────────┬────────────┘
-                                 │
-              ┌──────────────────┼──────────────────┐
-              │                  │                  │
-     ┌────────▼────────┐ ┌──────▼──────┐ ┌─────────▼─────────┐
-     │  REAL-TIME       │ │  BATCH      │ │  COMPLIANCE        │
-     │  Per-query on-   │ │  1000 que-  │ │  Quarterly certif. │
-     │  chain (<50ms)   │ │  ries/hour  │ │  R$100K-300K/yr    │
-     │  R$2M-5M/yr      │ │  R$500K-1M  │ │                    │
-     └────────┬────────┘ └──────┬──────┘ └─────────┬─────────┘
-              │                  │                  │
-              └──────────────────┼──────────────────┘
-                                 │
-                    ┌────────────▼────────────┐
-                    │  Winnex Smart Contract   │
-                    │  - submitAuditBatch()    │
-                    │  - verifyProof()         │
-                    │  - getAuditBatch()       │
-                    └────────────┬────────────┘
-                                 │
-                    ┌────────────▼────────────┐
-                    │  BLOCKCHAIN              │
-                    │  Hedera (low cost)       │
-                    │  Polygon (standard)      │
-                    │  Ethereum L2 (enterprise)│
-                    └─────────────────────────┘
-```
-
----
-
-## The Smart Contract
-
-### WinnexAudit.sol (Solidity)
+### How the Reference Contract Works
 
 ```solidity
-// SPDX-License-Identifier: BSL-1.1
-pragma solidity ^0.8.19;
-
+// Extremely simple: just stores SHA-3-256 hashes on-chain
 contract WinnexAudit {
-    struct AuditBatch {
-        bytes32 merkleRoot;
-        uint256 proofCount;
-        uint256 timestamp;
-        address submitter;
-    }
-
-    mapping(bytes32 => AuditBatch) public auditBatches;
     mapping(bytes32 => bool) public proofHashes;
-
-    event AuditSubmitted(
-        bytes32 indexed merkleRoot,
-        uint256 proofCount,
-        uint256 timestamp,
-        address indexed submitter
-    );
-
-    event ProofVerified(
-        bytes32 indexed proofHash,
-        bytes32 indexed merkleRoot,
-        address verifier
-    );
-
-    /// Submit a batch of audit proofs to the blockchain.
-    /// @param merkleRoot  Merkle root of all proof hashes in this batch
-    /// @param proofCount  Number of proofs in the batch
-    /// @param timestamp   Unix timestamp of submission
-    function submitAuditBatch(
-        bytes32 merkleRoot,
-        uint256 proofCount,
-        uint256 timestamp
-    ) external {
-        require(auditBatches[merkleRoot].timestamp == 0,
-                "Batch already exists");
-
-        auditBatches[merkleRoot] = AuditBatch({
-            merkleRoot: merkleRoot,
-            proofCount: proofCount,
-            timestamp: timestamp,
-            submitter: msg.sender
-        });
-
-        emit AuditSubmitted(merkleRoot, proofCount, timestamp, msg.sender);
+    
+    function submitBatch(bytes32 merkleRoot, uint256 proofCount) external {
+        // No access control. Anyone can submit. No spam protection.
     }
-
-    /// Verify a single proof against a Merkle root.
-    /// @param proofHash   SHA-256 hash of the proof data
-    /// @param merkleRoot  Merkle root the proof belongs to
-    /// @param proof       Merkle proof (sibling hashes)
-    /// @return            True if proof is valid
-    function verifyProof(
-        bytes32 proofHash,
-        bytes32 merkleRoot,
-        bytes32[] calldata proof
-    ) external returns (bool) {
-        require(auditBatches[merkleRoot].timestamp > 0,
-                "Batch not found");
-
-        // Recompute Merkle root from proof
-        bytes32 computed = proofHash;
-        for (uint256 i = 0; i < proof.length; i++) {
-            if (computed < proof[i]) {
-                computed = keccak256(abi.encodePacked(computed, proof[i]));
-            } else {
-                computed = keccak256(abi.encodePacked(proof[i], computed));
-            }
-        }
-
-        require(computed == merkleRoot, "Invalid Merkle proof");
-        proofHashes[proofHash] = true;
-
-        emit ProofVerified(proofHash, merkleRoot, msg.sender);
-        return true;
-    }
-
-    /// Get audit batch details.
-    function getAuditBatch(bytes32 merkleRoot)
-        external
-        view
-        returns (
-            uint256 proofCount,
-            uint256 timestamp,
-            address submitter
-        )
-    {
-        AuditBatch memory batch = auditBatches[merkleRoot];
-        return (batch.proofCount, batch.timestamp, batch.submitter);
+    
+    function verifyProof(bytes32 proofHash, bytes32 merkleRoot, ...) external {
+        // Checks Merkle proof existence only
     }
 }
 ```
 
----
-
-## Python Integration
-
-```python
-"""
-BlockchainAuditor: Integrates Madhava with blockchain for automatic auditing.
-Every search query generates a mathematical proof registered on-chain.
-"""
-import hashlib, json, time
-from datetime import datetime
-
-class BlockchainAuditor:
-    def __init__(self, madhava_index, blockchain_client=None):
-        self.madhava = madhava_index
-        self.blockchain = blockchain_client  # Web3.py / Ethers.js
-        self.smart_contract = "0x9e2f...a4b1"  # Winnex Audit Contract
-        self.audit_buffer = []
-        self.buffer_size = 1000  # Register in batches of 1000 queries
-
-    def search_with_proof(self, query, k=10):
-        """Execute search and generate mathematical proof for each excluded doc."""
-        results = self.madhava.search(query, k)
-        threshold = self.madhava.get_kth_threshold(k)
-
-        exclusion_proofs = []
-        for doc_id in range(self.madhava.n):
-            if doc_id in results:
-                continue
-            upper_bound = self.madhava.compute_upper_bound(doc_id, query)
-            if upper_bound < threshold:
-                exclusion_proofs.append({
-                    "doc_id": doc_id,
-                    "upper_bound": float(upper_bound),
-                    "threshold": float(threshold),
-                    "gap": float(threshold - upper_bound),
-                    "verdict": "PROVABLY_EXCLUDED"
-                })
-
-        proof_data = {
-            "query_hash": hashlib.sha256(query.tobytes()).hexdigest(),
-            "timestamp": datetime.utcnow().isoformat(),
-            "results": results.tolist(),
-            "exclusion_proofs": exclusion_proofs[:100],
-            "total_exclusions": len(exclusion_proofs),
-            "algorithm": "MadhavaCore [64,128]",
-            "method": "Cauchy-Schwarz upper bound",
-            "bound_violations": 0,
-            "ndcg_10": 1.0
-        }
-
-        proof_hash = hashlib.sha256(
-            json.dumps(proof_data, sort_keys=True).encode()
-        ).hexdigest()
-
-        self.audit_buffer.append({
-            "proof_hash": proof_hash,
-            "proof_data": proof_data
-        })
-
-        if len(self.audit_buffer) >= self.buffer_size:
-            self.flush_to_blockchain()
-
-        return {
-            "results": results,
-            "proof_hash": proof_hash,
-            "exclusion_count": len(exclusion_proofs),
-            "blockchain_pending": len(self.audit_buffer) < self.buffer_size
-        }
-
-    def flush_to_blockchain(self):
-        """Register batch of proofs on blockchain via smart contract."""
-        if not self.audit_buffer:
-            return
-
-        proof_hashes = [item["proof_hash"] for item in self.audit_buffer]
-        merkle_root = self._merkle_root(proof_hashes)
-
-        if self.blockchain:
-            tx_hash = self.blockchain.send_transaction(
-                to=self.smart_contract,
-                function="submitAuditBatch",
-                args=[merkle_root, len(self.audit_buffer),
-                      int(time.time())],
-                gas=500000
-            )
-            receipt = {
-                "tx_hash": tx_hash,
-                "merkle_root": merkle_root,
-                "proof_count": len(self.audit_buffer),
-                "timestamp": datetime.utcnow().isoformat(),
-                "block_number": self.blockchain.get_block_number()
-            }
-        else:
-            receipt = {
-                "tx_hash": "simulated",
-                "merkle_root": merkle_root,
-                "proof_count": len(self.audit_buffer),
-                "timestamp": datetime.utcnow().isoformat(),
-                "block_number": 0
-            }
-
-        self.audit_buffer = []
-        return receipt
-
-    def _merkle_root(self, hashes):
-        """Compute Merkle root from a list of SHA-256 hashes."""
-        if len(hashes) == 1:
-            return hashes[0]
-        new_level = []
-        for i in range(0, len(hashes), 2):
-            left = hashes[i]
-            right = hashes[i+1] if i+1 < len(hashes) else hashes[i]
-            combined = hashlib.sha256(
-                (left + right).encode()
-            ).hexdigest()
-            new_level.append(combined)
-        return self._merkle_root(new_level)
-
-    def verify_proof(self, proof_hash):
-        """Verify a proof is registered on the blockchain."""
-        if not self.blockchain:
-            return {"verified": False, "reason": "No blockchain client"}
-
-        event = self.blockchain.get_event(
-            contract=self.smart_contract,
-            event_name="AuditSubmitted",
-            filter={"proofHash": proof_hash}
-        )
-
-        if event:
-            return {
-                "verified": True,
-                "tx_hash": event["transactionHash"],
-                "block_number": event["blockNumber"],
-                "timestamp": event["timestamp"]
-            }
-        return {"verified": False}
-```
+**This contract does nothing that a simple database table cannot do.** Its only value is that the data lives on a public blockchain -- which may or may not matter for your specific regulatory requirements.
 
 ---
 
-## Delivery Models
+## Recommendation
 
-### Model A: Real-Time Audit Trail (Premium)
+| If you are... | Use this stack | Skip this repo |
+|---------------|---------------|----------------|
+| A bank needing EU AI Act compliance | Layer 1 + Layer 2 | ✅ |
+| A hospital with HIPAA requirements | Layer 1 | ✅ |
+| A law firm needing e-discovery proof | Layer 1 + signed audit logs | ✅ |
+| A crypto-native company wanting on-chain proofs | Layer 1 + Layer 3 (maybe) | Optional |
+| An investor evaluating the technology | Layer 1 (this is the real product) | ✅ |
 
-| Attribute | Detail |
-|-----------|--------|
-| **Price** | R$ 2M-5M/year |
-| **Delivery** | Each query generates a proof registered on-chain in real-time |
-| **Use case** | Banks, hospitals, where every decision must be instantly auditable |
-| **SLA** | Latency < 50ms for on-chain registration |
-| **Blockchain** | Hedera Hashgraph (low cost, high speed) or Polygon |
-| **Verification** | Regulator can verify any query within seconds |
-
-### Model B: Batch Audit (Standard)
-
-| Attribute | Detail |
-|-----------|--------|
-| **Price** | R$ 500K-1M/year |
-| **Delivery** | Proofs registered in batches (every 1,000 queries or every hour) |
-| **Use case** | E-commerce, media, where real-time auditing is not critical |
-| **SLA** | On-chain registration every 1 hour |
-| **Blockchain** | Ethereum L2 (Arbitrum, Optimism) for reduced cost |
-
-### Model C: Compliance Certificate (Entry)
-
-| Attribute | Detail |
-|-----------|--------|
-| **Price** | R$ 100K-300K/year |
-| **Delivery** | Compliance certificate registered on-chain quarterly |
-| **Use case** | Startups, companies preparing for regulation |
-| **SLA** | Certificate issued within 24 hours |
-| **Blockchain** | Polygon (minimum cost) |
-
----
-
-## Regulatory Benefits of Blockchain Certification
-
-### EU AI Act (Art. 13-15)
-
-| Requirement | Solution |
-|-------------|----------|
-| "High-risk AI systems must be transparent and auditable" | Each search decision has a mathematical proof registered on-chain, verifiable by any regulator |
-| Advantage over human audit | Regulator does not need to trust an auditing firm; they verify directly on the blockchain |
-
-### LGPD (Art. 20)
-
-| Requirement | Solution |
-|-------------|----------|
-| "Right to review automated decisions" | The citizen can request the proof of a specific decision. The hash is provided, and they can verify on-chain that the decision was mathematically correct |
-| Advantage | Fully automated process, no human intervention needed |
-
-### GDPR (Art. 22)
-
-| Requirement | Solution |
-|-------------|----------|
-| "Meaningful information about the logic involved" | The mathematical proof (Cauchy-Schwarz) is registered on-chain and can be explained in plain language |
-
-### HIPAA (sec. 164.524)
-
-| Requirement | Solution |
-|-------------|----------|
-| "Medical information retrieval must be complete" | The blockchain proves no relevant medical document was excluded. If excluded, the mathematical proof shows why |
-
----
-
-## Competitive Advantage
-
-| Capability | Traditional Audit | Winnex Proof-of-Audit |
-|-----------|------------------|----------------------|
-| **Cost per audit** | $50K-$200K | R$100K-5M/year (continuous) |
-| **Frequency** | Annual / quarterly | Continuous (per-query) |
-| **Trust model** | Trust the auditor | Trust the math + blockchain |
-| **Forgery risk** | PDF can be manipulated | Immutable on-chain hash |
-| **Verification** | Call the auditor | Verify independently on-chain |
-| **Timeline** | 3-6 months | Milliseconds (real-time) |
-| **Scope** | Sampled transactions | Every single query |
-| **Regulator access** | Request report | Self-serve verification |
-
----
-
-## The Complete Winnex AI Stack
-
-```
-Layer 3: PROOF-OF-AUDIT (This Repository)
-         Blockchain certification, smart contracts, regulatory verification
-               |
-Layer 2: ENTERPRISE STACK
-         Compliance dashboard, EU AI Act checklist, pricing, go-to-market
-               |
-Layer 1: AUDIT ENGINE (C++/Python)
-         Cauchy-Schwarz bounds, QR-JL projections, per-document proof
-               |
-         YOUR EXISTING VECTOR DATABASE
-         FAISS / Pinecone / Milvus / Weaviate / pgVector
-```
-
----
-
-## Getting Started
-
-```bash
-# Clone the repository
-git clone https://github.com/winnex-ai/winnex-proof-of-audit.git
-cd winnex-proof-of-audit
-
-# Install dependencies
-pip install web3.py
-
-# Deploy smart contract (testnet first)
-npx hardhat run scripts/deploy.js --network polygon-test
-
-# Run the auditor
-python examples/run_auditor.py
-```
-
----
-
-## Documentation
-
-| Document | Link |
-|----------|------|
-| Open Letter to Investors | [10.5281/zenodo.21106604](https://doi.org/10.5281/zenodo.21106604) |
-| Audit Module (C++) | [github.com/winnex-ai/winnex-audit-cpp](https://github.com/winnex-ai/winnex-audit-cpp) |
-| Enterprise Stack | [github.com/winnex-ai/winnex-enterprise-stack](https://github.com/winnex-ai/winnex-enterprise-stack) |
-| Definitive Benchmark | [10.5281/zenodo.21088504](https://doi.org/10.5281/zenodo.21088504) |
-
----
-
----
-
-
-
-**Business Source License 1.1 (BSL 1.1)**
-
-- Study, testing, and non-production evaluation: **permitted**
-- Commercial deployment: **requires separate license agreement**
-- Contact: **pay@winnex.ai**
-
----
-
-*Winnex AI — Trust Infrastructure for Regulated Enterprise AI.*
-*CNPJ: 58.364.637/0001-47 | Brazil | pay@winnex.ai*
+**Contact:** pay@winnex.ai | **Real product:** [github.com/winnex-ai/winnex-audit-cpp](https://github.com/winnex-ai/winnex-audit-cpp) | **Benchmark:** [10.5281/zenodo.21088504](https://doi.org/10.5281/zenodo.21088504)
