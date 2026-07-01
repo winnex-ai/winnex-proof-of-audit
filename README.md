@@ -1,32 +1,61 @@
 # Winnex Proof-of-Audit
 
-> **Mathematical Proof. Blockchain Certified. Regulator Ready.**
-> Prova Matematica. Certificada em Blockchain. Pronta para Reguladores.
+> **Supplementary audit layer for extreme-compliance scenarios.**
+> Layer 3 of the Winnex Enterprise Stack. Not for general use.
 
 [![License: BSL 1.1](https://img.shields.io/badge/License-BSL%201.1-yellow)](LICENSE)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21107317.svg)](https://doi.org/10.5281/zenodo.21107317)
-[![Zenodo](https://img.shields.io/badge/Zenodo-10.5281%2Fzenodo.21106604-1682D4?logo=zenodo)](https://doi.org/10.5281/zenodo.21106604)
-[![GitHub](https://img.shields.io/badge/GitHub-Audit%20Module-181717?logo=github)](https://github.com/winnex-ai/winnex-audit-cpp)
-[![GitHub](https://img.shields.io/badge/GitHub-Enterprise%20Stack-181717?logo=github)](https://github.com/winnex-ai/winnex-enterprise-stack)
 [![Contact](https://img.shields.io/badge/Contact-pay@winnex.ai-blue)](mailto:pay@winnex.ai)
 
 ---
 
-## The Problem
+## ⚠️ Important: When to Use This Layer
 
-Traditional compliance audits for AI systems rely on human auditors producing PDF reports. These are:
+**Winnex Proof-of-Audit is NOT for every client.** It is a supplementary, high-cost audit layer designed exclusively for scenarios where:
 
-- **Expensive**: A single SOC2 audit costs $50K-$200K
-- **Slow**: Audit cycles take 3-6 months
-- **Trust-based**: You must trust the auditing firm's reputation
-- **Point-in-time**: The audit is valid only for the moment it was produced
-- **Non-verifiable**: A PDF can be forged or manipulated
+| Scenario | Example | Why Proof-of-Audit |
+|----------|---------|-------------------|
+| **Regulator demands per-query blockchain proof** | Central bank audit, SEC investigation | Immutable on-chain verification |
+| **Court-ordered e-discovery with zero-tolerance** | Class action litigation | Mathematical proof per excluded document |
+| **Cross-jurisdictional compliance with conflicting laws** | International bank, multi-government contracts | Multi-chain verification |
+| **Internal policy requires cryptographic audit trail** | Tier-1 bank with zero-trust architecture | SHA-3-256 hashed proofs, Merkle tree |
 
-For regulated AI search, a new approach is needed: **continuous, mathematical, self-verifying audit trails**.
+### When Proof-of-Audit is Overkill
 
-## The Solution
+| Scenario | Recommended Layer | Why |
+|----------|-----------------|-----|
+| Standard regulatory compliance (EU AI Act, LGPD, GDPR) | **Layer 1 + Layer 2** only | Mathematical proof without blockchain cost/complexity |
+| Internal audit for non-critical systems | **Layer 1 only** | Cauchy-Schwarz bound proof sufficient |
+| Startups and mid-market | **Layer 1 + Layer 2** | Compliance dashboard without blockchain overhead |
 
-**Winnex Proof-of-Audit** combines the Madhava Cauchy-Schwarz mathematical guarantee with blockchain immutability. Every search query generates a mathematical proof that is cryptographically anchored to a public blockchain. Regulators can verify the proof independently -- without contacting Winnex, without trusting an auditor, without any intermediary.
+### Costs & Complexity
+
+| Factor | Layer 1 + Layer 2 | Adding Layer 3 (Proof-of-Audit) |
+|--------|------------------|--------------------------------|
+| **Annual license** | R$ 500K-1M | R$ 2M-5M |
+| **Infrastructure** | CPU-only, standard | Blockchain node/gateway + gas fees |
+| **Latency overhead** | None (1-2ms) | +50-500ms for on-chain registration |
+| **Operational complexity** | Low | High (key management, gas optimization) |
+| **When to use** | Default for all clients | Only when explicitly required by regulation or contract |
+
+---
+
+## What This Layer Does
+
+Proof-of-Audit adds **blockchain-anchored cryptographic verification** on top of the existing Madhava mathematical proof. It does NOT replace the lower layers -- it supplements them for the minority of clients who need immutable on-chain records.
+
+The standard Winnex flow (Layer 1 + Layer 2):
+```
+Search query -> Cauchy-Schwarz bound proof -> Compliance dashboard JSON -> Done. (~1ms)
+```
+
+With Proof-of-Audit (Layer 3):
+```
+Search query -> Cauchy-Schwarz bound proof -> SHA-3-256 hashing -> 
+Smart contract submission -> Merkle tree verification -> On-chain record. (~500ms)
+```
+
+**For most clients, the standard flow is sufficient.** The blockchain step adds cost, latency, and complexity that only makes sense for extreme audit scenarios.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
