@@ -4,6 +4,7 @@
 > Prova Matematica. Certificada em Blockchain. Pronta para Reguladores.
 
 [![License: BSL 1.1](https://img.shields.io/badge/License-BSL%201.1-yellow)](LICENSE)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21107317.svg)](https://doi.org/10.5281/zenodo.21107317)
 [![Zenodo](https://img.shields.io/badge/Zenodo-10.5281%2Fzenodo.21106604-1682D4?logo=zenodo)](https://doi.org/10.5281/zenodo.21106604)
 [![GitHub](https://img.shields.io/badge/GitHub-Audit%20Module-181717?logo=github)](https://github.com/winnex-ai/winnex-audit-cpp)
 [![GitHub](https://img.shields.io/badge/GitHub-Enterprise%20Stack-181717?logo=github)](https://github.com/winnex-ai/winnex-enterprise-stack)
