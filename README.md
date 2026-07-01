@@ -482,6 +482,43 @@ python examples/run_auditor.py
 
 ---
 
+---
+
+## Intellectual Property & Transparency
+
+This repository is made publicly available under the **Business Source License 1.1 (BSL 1.1)** as part of Winnex AI's commitment to **open innovation and investor-grade transparency**.
+
+### What This Means
+
+| Principle | Practice |
+|-----------|----------|
+| **Open Source Code** | The core algorithm, smart contracts, and integration layers are fully visible. Anyone can study, audit, and verify the mathematics. |
+| **Protected Commercial Use** | The BSL 1.1 allows free use for study, testing, and non-production evaluation. Commercial deployment requires a separate license agreement. |
+| **Investor Transparency** | All research, benchmarks, and strategic documentation are published on Zenodo with permanent DOIs. No black boxes. No hidden claims. |
+| **Mathematical Verifiability** | Every claim in our benchmarks can be independently reproduced. The code is the documentation. |
+
+### Strategic Documentation for Investors
+
+| Document | DOI | Description |
+|----------|-----|-------------|
+| **Open Letter to Investors & Strategic Partners** | [10.5281/zenodo.21106637](https://doi.org/10.5281/zenodo.21106637) | Market thesis, technology deep-dive, partnership models, 18-month journey with zero external capital |
+| **Audit Benchmark Supplement** | [10.5281/zenodo.21101148](https://doi.org/10.5281/zenodo.21101148) | EU AI Act, LGPD, HIPAA compliance mapping (9 pages) |
+| **Definitive Benchmark** | [10.5281/zenodo.21088504](https://doi.org/10.5281/zenodo.21088504) | 16 methods, SIFT-1M real data, 12 metrics |
+
+### For Partners and Investors
+
+Winnex AI was built over 18 months with **zero external capital**. We open-sourced the core technology under BSL 1.1 to:
+1. **Protect intellectual property** while allowing public mathematical verification
+2. **Demonstrate transparency** to potential enterprise customers and regulators
+3. **Create an open standard** for auditable vector search in regulated industries
+4. **Show investors** exactly what they are investing in -- no secrecy, no black boxes
+
+For commercial licensing, enterprise deployment, or strategic partnership inquiries:
+
+**Contact:** pay@winnex.ai
+
+---
+
 ## License
 
 **Business Source License 1.1 (BSL 1.1)**
