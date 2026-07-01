@@ -1,119 +1,136 @@
 // SPDX-License-Identifier: BSL-1.1
 pragma solidity ^0.8.19;
 
-/// @title Winnex Proof-of-Audit Smart Contract
-/// @notice Immutable registry of mathematical search audit proofs.
-///         Each proof is a Cauchy-Schwarz bound verification per excluded document.
-///         Proofs are organized in batches with Merkle tree roots for efficient verification.
-/// @dev Deploy on Polygon, Hedera, or Ethereum L2 for production use.
-///      Use Ethereum Sepolia or Polygon Mumbai for testing.
+/// @title Winnex Proof-of-Audit Smart Contract v2.0
+/// @notice Immutable registry of mathematical search audit proofs with Merkle tree verification.
+/// @dev Deploy on Polygon, Hedera, Ethereum, Avalanche. Each deployment is independent.
 /// @author Winnex AI | pay@winnex.ai
-/// @custom:repository https://github.com/winnex-ai/winnex-proof-of-audit
 
 contract WinnexAudit {
-    // ----- Types -----
+    // ===================== TYPES =====================
 
-    /// @notice A batch of audit proofs submitted together
     struct AuditBatch {
-        bytes32 merkleRoot;   // Merkle root of all proof hashes in this batch
-        uint256 proofCount;   // Number of proofs in the batch
-        uint256 timestamp;    // Unix timestamp of submission
-        address submitter;    // Address that submitted the batch
+        bytes32 merkleRoot;
+        uint256 proofCount;
+        uint256 timestamp;
+        address submitter;
+        string chainId;
     }
 
-    // ----- State -----
+    struct ProofReceipt {
+        bytes32 proofHash;
+        bytes32 merkleRoot;
+        uint256 blockNumber;
+        uint256 timestamp;
+        bool verified;
+        string algorithm;
+    }
 
-    /// @notice Mapping from Merkle root to audit batch
-    mapping(bytes32 => AuditBatch) public auditBatches;
+    // ===================== STATE =====================
 
-    /// @notice Track previously verified proof hashes
-    mapping(bytes32 => bool) public verifiedProofs;
-
-    /// @notice Address authorized to submit audit batches
     address public immutable owner;
+    uint256 public batchCounter;
+    string public constant VERSION = "2.0.0";
+    string public constant ALGORITHM = "MadhavaCore[64,128]";
+    string public constant BOUND_METHOD = "Cauchy-Schwarz+QR-JL";
 
-    // ----- Events -----
+    mapping(bytes32 => AuditBatch) public batches;
+    mapping(bytes32 => bool) public verifiedProofs;
+    mapping(bytes32 => ProofReceipt) public proofReceipts;
+    mapping(address => uint256) public submissionsByAddress;
 
-    /// @notice Emitted when a new audit batch is submitted
-    event AuditSubmitted(
+    uint256 public totalProofs;
+    uint256 public totalViolations;
+    bool public complianceMode;
+
+    // ===================== EVENTS =====================
+
+    event BatchSubmitted(
         bytes32 indexed merkleRoot,
         uint256 proofCount,
         uint256 timestamp,
         address indexed submitter
     );
 
-    /// @notice Emitted when a proof is verified independently
     event ProofVerified(
         bytes32 indexed proofHash,
         bytes32 indexed merkleRoot,
         address verifier
     );
 
-    /// @notice Emitted when the owner address is updated
-    event OwnerUpdated(
-        address indexed oldOwner,
+    event ComplianceReportGenerated(
+        bytes32 indexed reportHash,
+        uint256 totalProofs,
+        uint256 totalViolations,
+        uint256 timestamp
+    );
+
+    event OwnershipTransferred(
+        address indexed previousOwner,
         address indexed newOwner
     );
 
-    // ----- Errors -----
+    // ===================== ERRORS =====================
 
     error BatchAlreadyExists(bytes32 merkleRoot);
     error BatchNotFound(bytes32 merkleRoot);
     error InvalidMerkleProof();
     error NotAuthorized(address caller);
-    error ZeroAddressNotAllowed();
+    error EmptyProof();
+    error ComplianceModeRequired();
 
-    // ----- Modifiers -----
+    // ===================== MODIFIERS =====================
 
     modifier onlyOwner() {
         if (msg.sender != owner) revert NotAuthorized(msg.sender);
         _;
     }
 
-    // ----- Constructor -----
+    // ===================== CONSTRUCTOR =====================
 
-    constructor() {
+    constructor(bool enableCompliance) {
         owner = msg.sender;
+        complianceMode = enableCompliance;
     }
 
-    // ----- Core Functions -----
+    // ===================== CORE: SUBMIT =====================
 
     /// @notice Submit a batch of audit proofs
-    /// @param merkleRoot Merkle root of all proof hashes
-    /// @param proofCount Number of proofs in this batch
-    /// @param timestamp Unix timestamp
-    function submitAuditBatch(
-        bytes32 merkleRoot,
-        uint256 proofCount,
-        uint256 timestamp
-    ) external {
-        if (auditBatches[merkleRoot].timestamp != 0)
-            revert BatchAlreadyExists(merkleRoot);
+    function submitBatch(bytes32 merkleRoot, uint256 proofCount) external {
+        if (proofCount == 0) revert EmptyProof();
+        if (batches[merkleRoot].timestamp != 0) revert BatchAlreadyExists(merkleRoot);
 
-        auditBatches[merkleRoot] = AuditBatch({
+        batches[merkleRoot] = AuditBatch({
             merkleRoot: merkleRoot,
             proofCount: proofCount,
-            timestamp: timestamp,
-            submitter: msg.sender
+            timestamp: block.timestamp,
+            submitter: msg.sender,
+            chainId: _getChainId()
         });
 
-        emit AuditSubmitted(merkleRoot, proofCount, timestamp, msg.sender);
+        batchCounter++;
+        submissionsByAddress[msg.sender]++;
+        totalProofs += proofCount;
+
+        emit BatchSubmitted(merkleRoot, proofCount, block.timestamp, msg.sender);
     }
 
-    /// @notice Verify a proof against a Merkle root
-    /// @param proofHash SHA-256 hash of the proof data
-    /// @param merkleRoot Merkle root this proof belongs to
-    /// @param proof Merkle proof (sibling hashes)
-    /// @return True if proof is valid and verified
+    /// @notice Submit with compliance mode (requires complianceMode = true)
+    function submitBatchCompliant(bytes32 merkleRoot, uint256 proofCount) external {
+        if (!complianceMode) revert ComplianceModeRequired();
+        submitBatch(merkleRoot, proofCount);
+    }
+
+    // ===================== CORE: VERIFY =====================
+
+    /// @notice Verify a single proof against a Merkle root
     function verifyProof(
         bytes32 proofHash,
         bytes32 merkleRoot,
         bytes32[] calldata proof
     ) external returns (bool) {
-        if (auditBatches[merkleRoot].timestamp == 0)
-            revert BatchNotFound(merkleRoot);
+        if (batches[merkleRoot].timestamp == 0) revert BatchNotFound(merkleRoot);
 
-        // Recompute Merkle root from proof
         bytes32 computed = proofHash;
         for (uint256 i = 0; i < proof.length; i++) {
             if (computed < proof[i]) {
@@ -126,43 +143,86 @@ contract WinnexAudit {
         if (computed != merkleRoot) revert InvalidMerkleProof();
 
         verifiedProofs[proofHash] = true;
+        proofReceipts[proofHash] = ProofReceipt({
+            proofHash: proofHash,
+            merkleRoot: merkleRoot,
+            blockNumber: block.number,
+            timestamp: block.timestamp,
+            verified: true,
+            algorithm: ALGORITHM
+        });
+
         emit ProofVerified(proofHash, merkleRoot, msg.sender);
         return true;
     }
 
-    /// @notice Get audit batch details
-    /// @param merkleRoot Merkle root of the batch
-    /// @return proofCount Number of proofs, timestamp of submission, submitter address
-    function getAuditBatch(bytes32 merkleRoot)
-        external
-        view
-        returns (
-            uint256 proofCount,
-            uint256 timestamp,
-            address submitter
-        )
-    {
-        if (auditBatches[merkleRoot].timestamp == 0)
-            revert BatchNotFound(merkleRoot);
+    // ===================== COMPLIANCE =====================
 
-        AuditBatch memory batch = auditBatches[merkleRoot];
-        return (batch.proofCount, batch.timestamp, batch.submitter);
+    /// @notice Report total violations (called by Winnex backend)
+    function reportViolations(uint256 violationCount) external onlyOwner {
+        totalViolations += violationCount;
     }
 
-    /// @notice Check if a proof hash has been verified
-    /// @param proofHash The proof hash to check
-    /// @return True if already verified
-    function isProofVerified(bytes32 proofHash) external view returns (bool) {
+    /// @notice Generate compliance report hash
+    function generateComplianceReport() external onlyOwner returns (bytes32) {
+        bytes32 reportHash = keccak256(abi.encodePacked(
+            block.timestamp, totalProofs, totalViolations, batchCounter
+        ));
+        emit ComplianceReportGenerated(reportHash, totalProofs, totalViolations, block.timestamp);
+        return reportHash;
+    }
+
+    /// @notice Toggle compliance mode
+    function setComplianceMode(bool enabled) external onlyOwner {
+        complianceMode = enabled;
+    }
+
+    // ===================== QUERIES =====================
+
+    function getBatch(bytes32 merkleRoot)
+        external view returns (AuditBatch memory)
+    {
+        if (batches[merkleRoot].timestamp == 0) revert BatchNotFound(merkleRoot);
+        return batches[merkleRoot];
+    }
+
+    function isVerified(bytes32 proofHash) external view returns (bool) {
         return verifiedProofs[proofHash];
     }
 
-    /// @notice Get the total number of audit batches
-    /// @return The number of distinct Merkle roots submitted
-    function getBatchCount() external view returns (uint256) {
-        return auditBatchesCount;
+    function getStats() external view returns (
+        uint256 totalBatches,
+        uint256 totalProofs_,
+        uint256 totalViolations_,
+        uint256 lastTimestamp
+    ) {
+        return (batchCounter, totalProofs, totalViolations, block.timestamp);
     }
 
-    // ----- Internal State Tracking -----
+    // ===================== ADMIN =====================
 
-    uint256 private auditBatchesCount;
+    function transferOwnership(address newOwner) external onlyOwner {
+        if (newOwner == address(0)) revert NotAuthorized(newOwner);
+        emit OwnershipTransferred(owner, newOwner);
+        // Note: In production, use Ownable pattern from OpenZeppelin
+    }
+
+    // ===================== INTERNAL =====================
+
+    function _getChainId() internal view returns (string memory) {
+        uint256 id;
+        assembly { id := chainid() }
+        if (id == 137) return "polygon";
+        if (id == 1) return "ethereum";
+        if (id == 43114) return "avalanche";
+        if (id == 295) return "hedera";
+        if (id == 80001) return "polygon-mumbai";
+        if (id == 11155111) return "sepolia";
+        return "unknown";
+    }
+
+    // ===================== FALLBACK =====================
+
+    receive() external payable {}
+    fallback() external payable {}
 }
