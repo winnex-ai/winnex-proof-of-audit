@@ -4,6 +4,7 @@
 > ⚠️ **Most likely unnecessary for your use case. Read below first.**
 
 [![License: BSL 1.1](https://img.shields.io/badge/License-BSL%201.1-yellow)](LICENSE)
+[![Kaggle](https://img.shields.io/badge/Kaggle-Benchmark%20SIFT--1M-20BEFF?logo=kaggle)](https://www.kaggle.com/code/kleniopadilha/winnex-definitive-benchmark-v1-0)
 [![Contact](https://img.shields.io/badge/Contact-pay@winnex.ai-blue)](mailto:pay@winnex.ai)
 
 ---
@@ -93,6 +94,100 @@ contract WinnexAudit {
 
 ---
 
+
+
+---
+
+## ✅ The Right Way to Do Audit Trails (No Blockchain Needed)
+
+A blockchain is **not required** to prove immutability of an audit trail. An **Ed25519 digital signature + append-only hash chain** provides the same guarantees:
+
+- **Zero cost** — no gas fees, no transaction costs
+- **Zero latency** — signatures take microseconds, not seconds
+- **Zero infrastructure** — no blockchain nodes, no smart contracts, no wallet management
+- **Stronger legal precedent** — Ed25519 is NIST-standard, widely accepted in court
+
+### How It Works
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    APPEND-ONLY AUDIT LOG                     │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  Block 1: hash=H(proof_1 || prev_hash=0)       ← Ed25519   │
+│  Block 2: hash=H(proof_2 || prev_hash=block_1)  ← Ed25519   │
+│  Block 3: hash=H(proof_3 || prev_hash=block_2)  ← Ed25519   │
+│  ...                                                         │
+│  Block N: hash=H(proof_N || prev_hash=block_N-1) ← Ed25519  │
+│                                                             │
+│  Published: winnex-audit-YYYY-MM-DD.log.sig                 │
+│  Verify:    ed25519.verify(sig, log_hash, PUBLIC_KEY)       │
+└─────────────────────────────────────────────────────────────┘
+```
+
+The Ed25519 signature proves:
+1. **Integrity**: Any modification to the log breaks the hash chain
+2. **Authenticity**: Only the Winnex private key can produce valid signatures
+3. **Timestamp**: Combined with RFC 3161 timestamp service
+4. **Non-repudiation**: Winnex cannot deny having produced the audit trail
+
+### Comparison
+
+| Method | Cost per entry | Latency | Legal weight | Complexity |
+|--------|:-------------:|:-------:|:------------:|:----------:|
+| **Ed25519 + hash chain** | **$0** | **<1ms** | **NIST-standard** | **Low** |
+| RFC 3161 timestamp | ~$0.10 | ~1s | Widely accepted | Low |
+| Blockchain (Polygon) | $0.01-$0.50 | 2-60s | No additional weight | High |
+
+### Reference Implementation
+
+```python
+import hashlib, nacl, time
+
+class AppendOnlyAuditLog:
+    def __init__(self, signing_key: nacl.signing.SigningKey):
+        self.key = signing_key
+        self.chain = []
+        self.prev_hash = b''
+
+    def append(self, proof_data: dict) -> dict:
+        block_hash = hashlib.sha3_256(
+            json.dumps(proof_data, sort_keys=True).encode() +
+            self.prev_hash
+        ).hexdigest()
+        record = {
+            "timestamp": time.time(),
+            "proof": proof_data,
+            "prev_hash": self.prev_hash.hex(),
+            "block_hash": block_hash,
+        }
+        signature = self.key.sign(json.dumps(record, sort_keys=True).encode())
+        record["signature"] = signature.hex()
+        self.chain.append(record)
+        self.prev_hash = block_hash.encode()
+        return record
+
+    def verify(self, verify_key: nacl.signing.VerifyKey) -> bool:
+        prev = b''
+        for rec in self.chain:
+            expected_hash = hashlib.sha3_256(
+                json.dumps(rec["proof"], sort_keys=True).encode() + prev
+            ).hexdigest()
+            if expected_hash != rec["block_hash"]: return False
+            if rec["prev_hash"] != prev.hex(): return False
+            sig = bytes.fromhex(rec["signature"])
+            try:
+                verify_key.verify(
+                    json.dumps(rec, sort_keys=True).encode(), sig)
+            except: return False
+            prev = rec["block_hash"].encode()
+        return True
+```
+
+### Recommendation
+
+**Use Ed25519 + hash chain for all audit trails.** Only consider blockchain if a regulator explicitly demands on-chain proof — and then question whether that regulator understands the technology.
+
 ## Recommendation
 
 | If you are... | Use this stack | Skip this repo |
@@ -108,6 +203,8 @@ contract WinnexAudit {
 
 ---
 
+
+> **Benchmark:** [Kaggle: Winnex Definitive Benchmark v1.0](https://www.kaggle.com/code/kleniopadilha/winnex-definitive-benchmark-v1-0) — SIFT-1M, 16 métodos, NDCG=1.000, zero bound violations.
 ## 🏗️ Project History & Transparency Note
 
 ### When This Was Built
